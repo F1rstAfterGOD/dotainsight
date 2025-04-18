@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DotaInsight | Предметы</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">DotaInsight</h1>
+            <nav class="nav">
+                <a href="index.html">Главная</a>
+                <a href="#heroes">Герои</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="section items-section">
+            <div class="container">
+                <h2>📚 Глоссарий предметов</h2>
+                <input type="text" id="item-search" placeholder="Поиск...">
+                <div class="filters">
+                    <button data-filter="all">Все</button>
+                    <button data-filter="core">Основные</button>
+                    <button data-filter="consumables">Расходуемые</button>
+                </div>
+                <div id="items-grid" class="items-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/items.js"></script>
+</body>
+</html>

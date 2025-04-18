@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DotaInsight | Статистика Dota 2</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">DotaInsight</h1>
+            <nav class="nav">
+                <a href="#search">Поиск игрока</a>
+                <a href="heroes.html">Герои</a>
+                <a href="items.html">Предметы</a>
+            </nav>
+            <div class="auth-section">
+                <button id="steam-login">
+                    <img src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/steamworks_docs/english/sits_large_noborder.png" alt="Войти через Steam" width="180">
+                </button>
+                <div id="user-profile" class="hidden"></div>
+            </div>
+            <button id="theme-toggle">🌓 Сменить тему</button>
+        </div>
+    </header>
+
+    <main class="main">
+        <section id="search" class="section search-section">
+            <div class="container">
+                <h2>Поиск игрока</h2>
+                <input type="text" id="steam-id" placeholder="Steam ID / Профиль">
+                <button id="search-btn">Найти</button>
+                <div id="player-profile" class="profile"></div>
+            </div>
+        </section>
+
+        <section id="meta-heroes" class="section meta-section">
+            <div class="container">
+                <h2>🏆 Мета героев</h2>
+                <div class="roles">
+                    <div class="role" data-role="carry">
+                        <h3>Carry</h3>
+                        <div class="heroes-list"></div>
+                    </div>
+                    <div class="role" data-role="mid">
+                        <h3>Mid</h3>
+                        <div class="heroes-list"></div>
+                    </div>
+                    <div class="role" data-role="offlane">
+                        <h3>Offlane</h3>
+                        <div class="heroes-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="heroes" class="section heroes-section">
+            <div class="container">
+                <h2>Герои Dota 2</h2>
+                <div class="hero-filters">
+                    <button data-role="all">Все</button>
+                    <button data-role="Carry">Carry</button>
+                    <button data-role="Mid">Mid</button>
+                    <button data-role="Offlane">Offlane</button>
+                </div>
+                <div id="heroes-grid" class="heroes-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 DotaInsight | Не аффилирован с Valve</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.getElementById("search-btn").addEventListener("click", () => {
+            const steamId = document.getElementById("steam-id").value.trim();
+            if (steamId) {
+                window.location.href = `player_profile_updated_v3.html?steamId=${steamId}`;
+            } else {
+                alert("Пожалуйста, введите Steam ID.");
+            }
+        });
+    </script>
+</body>
+</html>
+</create_file>

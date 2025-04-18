@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DotaInsight | Детали матча</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #B31217;
+            --primary-dark: #8a0e12;
+            --bg-dark: #0D0D0D;
+            --bg-darker: #080808;
+            --bg-card: #1E1E1E;
+            --text-main: #FFFFFF;
+            --text-secondary: #CCCCCC;
+            --radiant: #4CAF50;
+            --dire: #F44336;
+            --win: #4CAF50;
+            --loss: #F44336;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        header {
+            background-color: var(--bg-darker);
+            padding: 15px 0;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav a {
+            color: var(--text-main);
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color 0.3s;
+        }
+
+        .nav a:hover {
+            color: var(--primary);
+        }
+
+        .match-header {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .match-id {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .match-result {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .radiant-win {
+            color: var(--radiant);
+        }
+
+        .dire-win {
+            color: var(--dire);
+        }
+
+        .match-details {
+            display: flex;
+            gap: 20px;
+            color: var(--text-secondary);
+        }
+
+        .match-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .teams-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .team {
+            flex: 1;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .team-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .radiant {
+            color: var(--radiant);
+        }
+
+        .dire {
+            color: var(--dire);
+        }
+
+        .team-score {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .player {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .player:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .player:last-child {
+            border-bottom: none;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-hero {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hero-image {
+            width: 30px;
+            height: 17px;
+            object-fit: cover;
+            border-radius: 3px;
+        }
+
+        .hero-name {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .stat {
+            min-width: 40px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .kda-positive {
+            color: var(--win);
+        }
+
+        .kda-negative {
+            color: var(--loss);
+        }
+
+        .match-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+
+        .buildings-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .building-tier {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .building {
+            width: 20px;
+            height: 20px;
+            margin: 2px;
+            background-color: #333;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .building.destroyed::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--loss);
+            transform: rotate(-45deg);
+        }
+
+        .building.standing {
+            background-color: var(--win);
+        }
+
+        .tier-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+        
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            width: 80%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: var(--text-secondary);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--text-main);
+        }
+        
+        .player-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .items-section, .abilities-section, .talents-section {
+            margin-bottom: 20px;
+        }
+        
+        .item-timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .item-with-time {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .ability-levels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .ability-level {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: rgba(255,255,255,0.1);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .talent {
+            background-color: rgba(255,215,0,0.1);
+            padding: 5px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .error-message i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .retry-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .retry-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .retry-btn i {
+            color: white;
+            margin-right: 5px;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .teams-container {
+                flex-direction: column;
+            }
+            
+            .match-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .player-stats {
+                gap: 5px;
+            }
+            
+            .stat {
+                min-width: 30px;
+            }
+
+            .player-details {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo">DotaInsight</a>
+            <nav class="nav">
+                <a href="#"><i class="fas fa-home"></i> Главная</a>
+                <a href="#"><i class="fas fa-users"></i> Игроки</a>
+                <a href="#"><i class="fas fa-shield-alt"></i> Герои</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Загрузка данных матча...</p>
+        </div>
+
+        <div class="match-header">
+            <div>
+                <div class="match-id">Матч ID: <span id="match-id">-</span></div>
+                <div class="match-result" id="match-result">-</div>
+                <div class="match-details">
+                    <div class="match-detail"><i class="fas fa-clock"></i> <span id="duration">-</span></div>
+                    <div class="match-detail"><i class="fas fa-gamepad"></i> <span id="game-mode">-</span></div>
+                    <div class="match-detail"><i class="fas fa-calendar"></i> <span id="match-date">-</span></div>
+                </div>
+            </div>
+            <div>
+                <div class="team-score radiant" id="radiant-score">-</div>
+                <span class="vs">vs</span>
+                <div class="team-score dire" id="dire-score">-</div>
+            </div>
+        </div>
+
+        <div class="teams-container">
+            <div class="team">
+                <div class="team-header">
+                    <div class="team-name radiant">Radiant</div>
+                    <div class="team-score radiant" id="radiant-kills">-</div>
+                </div>
+                <div id="radiant-players">
+                    <!-- Players will be inserted here -->
+                </div>
+            </div>
+            <div class="team">
+                <div class="team-header">
+                    <div class="team-name dire">Dire</div>
+                    <div class="team-score dire" id="dire-kills">-</div>
+                </div>
+                <div id="dire-players">
+                    <!-- Players will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="match-stats">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-card-title">График золота</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="goldChart"></canvas>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-card-title">График опыта</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="xpChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="match-stats">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-card-title">Уничтоженные строения</div>
+                </div>
+                <div class="buildings-container" id="buildings-status">
+                    <!-- Buildings status will be inserted here -->
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-card-title">График убийств</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="killsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2023 DotaInsight | Данные предоставлены OpenDota API | Не аффилирован с Valve Corporation</p>
+        </div>
+    </div>
+
+    <div id="playerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="playerModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация API
+        const API_URL = "https://api.opendota.com/api";
+        
+        // Получаем ID матча из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const matchId = urlParams.get('id');
+        
+        // Элементы страницы
+        const loadingElement = document.getElementById('loading');
+        const containerElement = document.querySelector('.container');
+
+        // Словарь героев Dota 2
+        const heroNames = {
+            "antimage": "Anti-Mage",
+            "axe": "Axe",
+            "bane": "Bane",
+            "bloodseeker": "Bloodseeker",
+            "crystal_maiden": "Crystal Maiden",
+            "drow_ranger": "Drow Ranger",
+            "earthshaker": "Earthshaker",
+            "juggernaut": "Juggernaut",
+            "mirana": "Mirana",
+            "morphling": "Morphling",
+            "nevermore": "Shadow Fiend",
+            "phantom_lancer": "Phantom Lancer",
+            "puck": "Puck",
+            "pudge": "Pudge",
+            "razor": "Razor",
+            "sand_king": "Sand King",
+            "storm_spirit": "Storm Spirit",
+            "sven": "Sven",
+            "tiny": "Tiny",
+            "vengefulspirit": "Vengeful Spirit",
+            "windrunner": "Windranger",
+            "zuus": "Zeus",
+            "kunkka": "Kunkka",
+            "lina": "Lina",
+            "lion": "Lion",
+            "shadow_shaman": "Shadow Shaman",
+            "slardar": "Slardar",
+            "tidehunter": "Tidehunter",
+            "witch_doctor": "Witch Doctor",
+            "lich": "Lich",
+            "riki": "Riki",
+            "enigma": "Enigma",
+            "tinker": "Tinker",
+            "sniper": "Sniper",
+            "necrolyte": "Necrophos",
+            "warlock": "Warlock",
+            "beastmaster": "Beastmaster",
+            "queenofpain": "Queen of Pain",
+            "venomancer": "Venomancer",
+            "faceless_void": "Faceless Void",
+            "skeleton_king": "Wraith King",
+            "death_prophet": "Death Prophet",
+            "phantom_assassin": "Phantom Assassin",
+            "pugna": "Pugna",
+            "templar_assassin": "Templar Assassin",
+            "viper": "Viper",
+            "luna": "Luna",
+            "dragon_knight": "Dragon Knight",
+            "dazzle": "Dazzle",
+            "rattletrap": "Clockwerk",
+            "leshrac": "Leshrac",
+            "furion": "Nature's Prophet",
+            "life_stealer": "Lifestealer",
+            "dark_seer": "Dark Seer",
+            "clinkz": "Clinkz",
+            "omniknight": "Omniknight",
+            "enchantress": "Enchantress",
+            "huskar": "Huskar",
+            "night_stalker": "Night Stalker",
+            "broodmother": "Broodmother",
+            "bounty_hunter": "Bounty Hunter",
+            "weaver": "Weaver",
+            "jakiro": "Jakiro",
+            "batrider": "Batrider",
+            "chen": "Chen",
+            "spectre": "Spectre",
+            "ancient_apparition": "Ancient Apparition",
+            "doom_bringer": "Doom",
+            "ursa": "Ursa",
+            "spirit_breaker": "Spirit Breaker",
+            "gyrocopter": "Gyrocopter",
+            "alchemist": "Alchemist",
+            "invoker": "Invoker",
+            "silencer": "Silencer",
+            "obsidian_destroyer": "Outworld Devourer",
+            "lycan": "Lycan",
+            "brewmaster": "Brewmaster",
+            "shadow_demon": "Shadow Demon",
+            "lone_druid": "Lone Druid",
+            "chaos_knight": "Chaos Knight",
+            "meepo": "Meepo",
+            "treant": "Treant Protector",
+            "ogre_magi": "Ogre Magi",
+            "undying": "Undying",
+            "rubick": "Rubick",
+            "disruptor": "Disruptor",
+            "nyx_assassin": "Nyx Assassin",
+            "naga_siren": "Naga Siren",
+            "keeper_of_the_light": "Keeper of the Light",
+            "wisp": "Io",
+            "visage": "Visage",
+            "slark": "Slark",
+            "medusa": "Medusa",
+            "troll_warlord": "Troll Warlord",
+            "centaur": "Centaur Warrunner",
+            "magnataur": "Magnus",
+            "shredder": "Timbersaw",
+            "bristleback": "Bristleback",
+            "tusk": "Tusk",
+            "skywrath_mage": "Skywrath Mage",
+            "abaddon": "Abaddon",
+            "elder_titan": "Elder Titan",
+            "legion_commander": "Legion Commander",
+            "techies": "Techies",
+            "ember_spirit": "Ember Spirit",
+            "earth_spirit": "Earth Spirit",
+            "abyssal_underlord": "Underlord",
+            "terrorblade": "Terrorblade",
+            "phoenix": "Phoenix",
+            "oracle": "Oracle",
+            "winter_wyvern": "Winter Wyvern",
+            "arc_warden": "Arc Warden",
+            "monkey_king": "Monkey King",
+            "dark_willow": "Dark Willow",
+            "pangolier": "Pangolier",
+            "grimstroke": "Grimstroke",
+            "hoodwink": "Hoodwink",
+            "void_spirit": "Void Spirit",
+            "snapfire": "Snapfire",
+            "mars": "Mars",
+            "dawnbreaker": "Dawnbreaker",
+            "marci": "Marci",
+            "primal_beast": "Primal Beast",
+            "muerta": "Muerta"
+        };
+
+        // Функция для получения имени героя по ID
+        function getHeroNameById(heroId) {
+            const heroIdMap = {
+                1: "antimage",
+                2: "axe",
+                3: "bane",
+                4: "bloodseeker",
+                5: "crystal_maiden",
+                6: "drow_ranger",
+                7: "earthshaker",
+                8: "juggernaut",
+                9: "mirana",
+                10: "morphling",
+                11: "nevermore",
+                12: "phantom_lancer",
+                13: "puck",
+                14: "pudge",
+                15: "razor",
+                16: "sand_king",
+                17: "storm_spirit",
+                18: "sven",
+                19: "tiny",
+                20: "vengefulspirit",
+                21: "windrunner",
+                22: "zuus",
+                23: "kunkka",
+                25: "lina",
+                26: "lion",
+                27: "shadow_shaman",
+                28: "slardar",
+                29: "tidehunter",
+                30: "witch_doctor",
+                31: "lich",
+                32: "riki",
+                33: "enigma",
+                34: "tinker",
+                35: "sniper",
+                36: "necrolyte",
+                37: "warlock",
+                38: "beastmaster",
+                39: "queenofpain",
+                40: "venomancer",
+                41: "faceless_void",
+                42: "skeleton_king",
+                43: "death_prophet",
+                44: "phantom_assassin",
+                45: "pugna",
+                46: "templar_assassin",
+                47: "viper",
+                48: "luna",
+                49: "dragon_knight",
+                50: "dazzle",
+                51: "rattletrap",
+                52: "leshrac",
+                53: "furion",
+                54: "life_stealer",
+                55: "dark_seer",
+                56: "clinkz",
+                57: "omniknight",
+                58: "enchantress",
+                59: "huskar",
+                60: "night_stalker",
+                61: "broodmother",
+                62: "bounty_hunter",
+                63: "weaver",
+                64: "jakiro",
+                65: "batrider",
+                66: "chen",
+                67: "spectre",
+                68: "ancient_apparition",
+                69: "doom_bringer",
+                70: "ursa",
+                71: "spirit_breaker",
+                72: "gyrocopter",
+                73: "alchemist",
+                74: "invoker",
+                75: "silencer",
+                76: "obsidian_destroyer",
+                77: "lycan",
+                78: "brewmaster",
+                79: "shadow_demon",
+                80: "lone_druid",
+                81: "chaos_knight",
+                82: "meepo",
+                83: "treant",
+                84: "ogre_magi",
+                85: "undying",
+                86: "rubick",
+                87: "disruptor",
+                88: "nyx_assassin",
+                89: "naga_siren",
+                90: "keeper_of_the_light",
+                91: "wisp",
+                92: "visage",
+                93: "slark",
+                94: "medusa",
+                95: "troll_warlord",
+                96: "centaur",
+                97: "magnataur",
+                98: "shredder",
+                99: "bristleback",
+                100: "tusk",
+                101: "skywrath_mage",
+                102: "abaddon",
+                103: "elder_titan",
+                104: "legion_commander",
+                105: "techies",
+                106: "ember_spirit",
+                107: "earth_spirit",
+                108: "abyssal_underlord",
+                109: "terrorblade",
+                110: "phoenix",
+                111: "oracle",
+                112: "winter_wyvern",
+                113: "arc_warden",
+                114: "monkey_king",
+                119: "dark_willow",
+                120: "pangolier",
+                121: "grimstroke",
+                123: "hoodwink",
+                126: "void_spirit",
+                128: "snapfire",
+                129: "mars",
+                130: "dawnbreaker",
+                131: "marci",
+                132: "primal_beast",
+                133: "muerta"
+            };
+            return heroIdMap[heroId] || "unknown";
+        }
+
+        // Функция для отображения/скрытия загрузки
+        function toggleLoading(show) {
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // Функция для отображения ошибки
+        function showError(message) {
+            toggleLoading(false);
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `
+                <p><i class="fas fa-exclamation-triangle"></i> ${message}</p>
+                ${matchId ? `<p>Match ID: ${matchId}</p>` : ''}
+                <button onclick="window.location.reload()" class="retry-btn">
+                    <i class="fas fa-sync-alt"></i> Попробовать снова
+                </button>
+            `;
+            
+            if (containerElement) {
+                containerElement.prepend(errorDiv);
+            } else {
+                document.body.prepend(errorDiv);
+            }
+        }
+
+        // Функция для установки текстового содержимого элемента
+        function setTextContent(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text || '-';
+        }
+
+        // Функция для загрузки данных матча
+        async function loadMatchData() {
+            if (!matchId) {
+                throw new Error('ID матча не указан в URL');
+            }
+
+            toggleLoading(true);
+            
+            try {
+                const response = await fetch(`${API_URL}/matches/${matchId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data || !data.match_id) {
+                    throw new Error('Неверный формат данных матча');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Ошибка загрузки матча:', error);
+                throw error;
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        // Функция для отображения информации о матче
+        function renderMatchInfo(data) {
+            if (!data) return;
+            
+            setTextContent('match-id', data.match_id);
+            setTextContent('duration', formatDuration(data.duration));
+            setTextContent('game-mode', getGameMode(data.game_mode));
+            
+            // Результат матча
+            const resultElement = document.getElementById('match-result');
+            if (resultElement) {
+                if (data.radiant_win !== undefined) {
+                    resultElement.textContent = data.radiant_win ? 'Победа Radiant' : 'Победа Dire';
+                    resultElement.className = `match-result ${data.radiant_win ? 'radiant-win' : 'dire-win'}`;
+                }
+            }
+            
+            // Дата матча
+            if (data.start_time) {
+                const matchDate = new Date(data.start_time * 1000);
+                const dateString = formatMatchDate(matchDate);
+                setTextContent('match-date', dateString);
+            }
+        }
+
+        // Модальное окно
+        const modal = document.getElementById('playerModal');
+        const modalContent = document.getElementById('playerModalContent');
+        const closeBtn = document.querySelector('.close');
+        
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Функция для отображения игроков
+        function renderPlayers(players) {
+    if (!players || !Array.isArray(players)) return;
+    
+    const radiantContainer = document.getElementById('radiant-players');
+    const direContainer = document.getElementById('dire-players');
+    
+    if (radiantContainer) radiantContainer.innerHTML = '';
+    if (direContainer) direContainer.innerHTML = '';
+    
+    let radiantKills = 0;
+    let direKills = 0;
+    
+    players.forEach(player => {
+        const isRadiant = player.isRadiant;
+        
+        if (isRadiant) {
+            radiantKills += player.kills || 0;
+        } else {
+            direKills += player.kills || 0;
+        }
+        
+        const heroId = player.hero_id;
+        const heroName = getHeroNameById(heroId);
+        const heroImage = `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${heroName}.png`;
+        const localizedName = heroNames[heroName] || heroName.replace(/_/g, ' ');
+        
+        // Новый способ получения аватарки
+        const avatarUrl = player.account_id ? 
+            `https://avatars.steamstatic.com/${getSteamAvatarHash(player.account_id)}` :
+            'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg';
+        
+        const kdaRatio = ((player.kills || 0) + (player.assists || 0)) / Math.max(1, player.deaths || 1);
+        const kdaClass = kdaRatio >= 2 ? 'kda-positive' : kdaRatio <= 1 ? 'kda-negative' : '';
+        
+        const playerElement = document.createElement('div');
+        playerElement.className = 'player';
+        playerElement.style.cursor = 'pointer';
+        playerElement.innerHTML = `
+            <img src="${avatarUrl}" 
+                 class="player-avatar" alt="Аватар"
+                 onerror="this.onerror=null;this.src='https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg'">
+            <div class="player-info">
+                <div class="player-name">${player.personaname || 'Аноним'}</div>
+                <div class="player-hero">
+                    <img src="${heroImage}" 
+                         class="hero-image" alt="${localizedName}" 
+                         onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/unknown.png'">
+                    <div class="hero-name">${localizedName}</div>
+                </div>
+            </div>
+            <div class="player-stats">
+                <div class="stat">
+                    <div class="stat-value ${kdaClass}">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</div>
+                    <div class="stat-label">KDA</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${player.gold_per_min || 0}</div>
+                    <div class="stat-label">GPM</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${player.xp_per_min || 0}</div>
+                    <div class="stat-label">XPM</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${player.last_hits || 0}</div>
+                    <div class="stat-label">LH</div>
+                </div>
+            </div>
+        `;
+        
+        playerElement.addEventListener('click', () => {
+            showPlayerDetails(player);
+        });
+        
+        if (isRadiant && radiantContainer) {
+            radiantContainer.appendChild(playerElement);
+        } else if (direContainer) {
+            direContainer.appendChild(playerElement);
+        }
+    });
+    
+    setTextContent('radiant-kills', radiantKills);
+    setTextContent('dire-kills', direKills);
+    setTextContent('radiant-score', radiantKills);
+    setTextContent('dire-score', direKills);
+}
+
+// Обновленная функция для получения хэша аватарки
+function getSteamAvatarHash(steamId32) {
+    // Steam теперь требует использования steamID64
+    const steamId64 = BigInt(steamId32) + BigInt(76561197960265728);
+    
+    // Варианты размеров: full, medium, small
+    return `https://avatars.steamstatic.com/${steamId64}_full.jpg`;
+}
+
+// Добавьте эту вспомогательную функцию для генерации хэша аватара Steam
+function getSteamAvatarHash(steamId32) {
+    if (!steamId32) return 'fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb';
+    
+    // Простая хэш-функция для демонстрации
+    const hash = (steamId32 % 8).toString();
+    const chars = 'abcdef0123456789';
+    let randomHash = '';
+    
+    for (let i = 0; i < 40; i++) {
+        randomHash += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    return `${hash}/${hash}${randomHash}_full.jpg`;
+}
+
+        // Функция для отображения деталей игрока
+        async function showPlayerDetails(player) {
+    toggleLoading(true);
+    
+    try {
+        // Проверяем, есть ли account_id у игрока
+        if (!player.account_id) {
+            throw new Error('Игрок анонимный - данные недоступны');
+        }
+
+        // Получаем базовые данные игрока
+        const playerResponse = await fetch(`${API_URL}/players/${player.account_id}`);
+        if (!playerResponse.ok) {
+            throw new Error('Не удалось загрузить профиль игрока');
+        }
+        const playerProfile = await playerResponse.json();
+
+        // Получаем данные игрока в конкретном матче
+        const matchResponse = await fetch(`${API_URL}/players/${player.account_id}/matches/${matchId}`);
+        if (!matchResponse.ok) {
+            throw new Error('Не удалось загрузить данные игрока в матче');
+        }
+        const matchData = await matchResponse.json();
+
+        // Получаем данные о герое
+        const heroId = player.hero_id;
+        const heroName = getHeroNameById(heroId);
+        const heroImage = `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${heroName}.png`;
+        const localizedName = heroNames[heroName] || heroName.replace(/_/g, ' ');
+
+        // Формируем HTML для модального окна
+        let html = `
+            <div class="player-details-header">
+                <img src="${playerProfile.profile?.avatarfull || 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg'}" 
+                     class="player-avatar" style="width:80px;height:80px;" alt="Аватар"
+                     onerror="this.onerror=null;this.src='https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg'">
+                <div>
+                    <h2>${playerProfile.profile?.personaname || 'Аноним'}</h2>
+                    <div class="player-hero">
+                        <img src="${heroImage}" 
+                             class="hero-image" style="width:60px;height:34px;" alt="${localizedName}" 
+                             onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/unknown.png'">
+                        <span>${localizedName}</span>
+                    </div>
+                    <div class="player-stats-summary">
+                        <div class="stat-box">
+                            <div class="stat-value">${player.kills || 0}</div>
+                            <div class="stat-label">Убийства</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${player.deaths || 0}</div>
+                            <div class="stat-label">Смерти</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${player.assists || 0}</div>
+                            <div class="stat-label">Помощи</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${player.gold_per_min || 0}</div>
+                            <div class="stat-label">GPM</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${player.xp_per_min || 0}</div>
+                            <div class="stat-label">XPM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="player-details-content">
+        `;
+
+        // Добавляем раздел с предметами
+        if (matchData.purchase_log?.length > 0) {
+            html += `
+                <div class="details-section">
+                    <h3><i class="fas fa-shopping-bag"></i> Предметы</h3>
+                    <div class="items-grid">
+                        ${matchData.purchase_log.map(item => `
+                            <div class="item-card">
+                                <img src="https://cdn.cloudflare.steamstatic.com/apps/dota2/images/items/${item.key}_lg.png" 
+                                     alt="${item.key}" width="42" height="31"
+                                     onerror="this.onerror=null;this.style.display='none'">
+                                <div class="item-time">${formatDuration(item.time)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Добавляем раздел со способностями
+        if (matchData.ability_upgrades_arr?.length > 0) {
+            const abilities = matchData.ability_upgrades_arr
+                .filter(a => !a.ability.includes('special_bonus'))
+                .sort((a, b) => a.level - b.level);
+
+            if (abilities.length > 0) {
+                html += `
+                    <div class="details-section">
+                        <h3><i class="fas fa-fire"></i> Прокачка способностей</h3>
+                        <div class="abilities-grid">
+                            ${abilities.map(ability => `
+                                <div class="ability-card">
+                                    <div class="ability-name">${ability.ability.replace(/_/g, ' ')}</div>
+                                    <div class="ability-level">Ур. ${ability.level}</div>
+                                    <div class="ability-time">${formatDuration(ability.time)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Добавляем раздел с талантами
+        if (matchData.ability_upgrades_arr) {
+            const talents = matchData.ability_upgrades_arr
+                .filter(a => a.ability.includes('special_bonus'))
+                .sort((a, b) => a.time - b.time);
+
+            if (talents.length > 0) {
+                html += `
+                    <div class="details-section">
+                        <h3><i class="fas fa-star"></i> Таланты</h3>
+                        <div class="talents-grid">
+                            ${talents.map(talent => `
+                                <div class="talent-card">
+                                    <div class="talent-name">${talent.ability.replace('special_bonus_', '').replace(/_/g, ' ')}</div>
+                                    <div class="talent-time">${formatDuration(talent.time)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Добавляем дополнительную статистику
+        html += `
+            <div class="details-section">
+                <h3><i class="fas fa-chart-bar"></i> Статистика</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span>Урон героям:</span>
+                        <span>${matchData.hero_damage || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Урон зданиям:</span>
+                        <span>${matchData.tower_damage || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Лечение:</span>
+                        <span>${matchData.hero_healing || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Добито крипов:</span>
+                        <span>${player.last_hits || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Денай крипов:</span>
+                        <span>${player.denies || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Участие в убийствах:</span>
+                        <span>${((player.kills + player.assists) / Math.max(1, matchData.teamfight_participation || 1) * 100).toFixed(1)}%</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        html += `</div>`; // Закрываем player-details-content
+
+        // Добавляем CSS стили для модального окна
+        const style = document.createElement('style');
+        style.textContent = `
+            .player-details-header {
+                display: flex;
+                gap: 20px;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            .player-stats-summary {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+                margin-top: 15px;
+            }
+            .stat-box {
+                background: rgba(255,255,255,0.05);
+                padding: 8px;
+                border-radius: 4px;
+                text-align: center;
+            }
+            .stat-box .stat-value {
+                font-size: 18px;
+                font-weight: bold;
+            }
+            .stat-box .stat-label {
+                font-size: 12px;
+                color: #aaa;
+            }
+            .details-section {
+                margin-bottom: 25px;
+            }
+            .details-section h3 {
+                margin-bottom: 15px;
+                color: var(--primary);
+            }
+            .items-grid, .abilities-grid, .talents-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+            .item-card, .ability-card, .talent-card {
+                background: rgba(255,255,255,0.05);
+                padding: 10px;
+                border-radius: 4px;
+                text-align: center;
+            }
+            .item-time, .ability-time, .talent-time {
+                font-size: 12px;
+                color: #aaa;
+                margin-top: 5px;
+            }
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px;
+                background: rgba(255,255,255,0.05);
+                border-radius: 4px;
+            }
+            @media (max-width: 768px) {
+                .player-stats-summary {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+                .items-grid, .abilities-grid, .talents-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                }
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        `;
+        
+        modalContent.innerHTML = '';
+        modalContent.appendChild(style);
+        modalContent.innerHTML += html;
+        modal.style.display = "block";
+    } catch (error) {
+        console.error('Ошибка загрузки деталей игрока:', error);
+        modalContent.innerHTML = `
+            <div class="error-message">
+                <p><i class="fas fa-exclamation-triangle"></i> Не удалось загрузить детальную информацию об игроке</p>
+                <p>${error.message}</p>
+                ${player.account_id ? `<p>Steam ID: ${player.account_id}</p>` : ''}
+                <button onclick="window.location.reload()" class="retry-btn">
+                    <i class="fas fa-sync-alt"></i> Обновить
+                </button>
+            </div>
+        `;
+        modal.style.display = "block";
+    } finally {
+        toggleLoading(false);
+    }
+}
+
+        // Функция для отображения состояния зданий
+        function renderBuildingsStatus(data) {
+            if (!data || data.tower_status_radiant === undefined || data.tower_status_dire === undefined || 
+                data.barracks_status_radiant === undefined || data.barracks_status_dire === undefined) {
+                console.warn('Недостаточно данных о зданиях');
+                const buildingsContainer = document.getElementById('buildings-status');
+                if (buildingsContainer) {
+                    buildingsContainer.innerHTML = '<p>Нет данных о состоянии зданий</p>';
+                }
+                return;
+            }
+                
+            const buildingsContainer = document.getElementById('buildings-status');
+            if (!buildingsContainer) return;
+            
+            buildingsContainer.innerHTML = `
+                <div class="building-tier">
+                    <div class="building ${(data.tower_status_radiant & (1 << 0)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="building ${(data.tower_status_radiant & (1 << 1)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="building ${(data.tower_status_radiant & (1 << 2)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="tier-label">T1</div>
+                </div>
+                <div class="building-tier">
+                    <div class="building ${(data.tower_status_radiant & (1 << 3)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="building ${(data.tower_status_radiant & (1 << 4)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="building ${(data.tower_status_radiant & (1 << 5)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="tier-label">T2</div>
+                </div>
+                <div class="building-tier">
+                    <div class="building ${(data.tower_status_radiant & (1 << 6)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="building ${(data.tower_status_radiant & (1 << 7)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="tier-label">T3</div>
+                </div>
+                <div class="building-tier">
+                    <div class="building ${(data.barracks_status_radiant & (1 << 0)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="tier-label">Melee</div>
+                </div>
+                <div class="building-tier">
+                    <div class="building ${(data.barracks_status_radiant & (1 << 1)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="tier-label">Ranged</div>
+                </div>
+                <div class="building-tier">
+                    <div class="building ${(data.barracks_status_radiant & (1 << 2)) ? 'destroyed' : 'standing'}"></div>
+                    <div class="tier-label">Ancient</div>
+                </div>
+            `;
+        }
+
+        // Функция для создания графиков
+        function renderCharts(data) {
+            if (!data) return;
+            
+            // График золота
+            if (data.radiant_gold_adv && data.radiant_gold_adv.length > 0 && document.getElementById('goldChart')) {
+                try {
+                    const goldCtx = document.getElementById('goldChart').getContext('2d');
+                    const labels = generateTimeLabels(data.duration, data.radiant_gold_adv.length);
+                    
+                    new Chart(goldCtx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Radiant Gold',
+                                    data: data.radiant_gold_adv.map(v => v > 0 ? v : null),
+                                    borderColor: '#4CAF50',
+                                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                    tension: 0.3,
+                                    fill: true
+                                },
+                                {
+                                    label: 'Dire Gold',
+                                    data: data.radiant_gold_adv.map(v => v < 0 ? -v : null),
+                                    borderColor: '#F44336',
+                                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                                    tension: 0.3,
+                                    fill: true
+                                }
+                            ]
+                        },
+                        options: getChartOptions()
+                    });
+                } catch (e) {
+                    console.error('Ошибка создания графика золота:', e);
+                }
+            } else {
+                console.warn('Нет данных для графика золота');
+                document.getElementById('goldChart').parentElement.innerHTML = '<p>Нет данных для графика золота</p>';
+            }
+            
+            // График опыта
+            if (data.radiant_xp_adv && data.radiant_xp_adv.length > 0 && document.getElementById('xpChart')) {
+                try {
+                    const xpCtx = document.getElementById('xpChart').getContext('2d');
+                    const labels = generateTimeLabels(data.duration, data.radiant_xp_adv.length);
+                    
+                    new Chart(xpCtx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Radiant XP',
+                                    data: data.radiant_xp_adv.map(v => v > 0 ? v : null),
+                                    borderColor: '#4CAF50',
+                                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                    tension: 0.3,
+                                    fill: true
+                                },
+                                {
+                                    label: 'Dire XP',
+                                    data: data.radiant_xp_adv.map(v => v < 0 ? -v : null),
+                                    borderColor: '#F44336',
+                                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                                    tension: 0.3,
+                                    fill: true
+                                }
+                            ]
+                        },
+                        options: getChartOptions()
+                    });
+                } catch (e) {
+                    console.error('Ошибка создания графика опыта:', e);
+                }
+            } else {
+                console.warn('Нет данных для графика опыта');
+                document.getElementById('xpChart').parentElement.innerHTML = '<p>Нет данных для графика опыта</p>';
+            }
+            
+            // График убийств
+            if (data.players && data.players.length > 0 && document.getElementById('killsChart')) {
+                try {
+                    const killsCtx = document.getElementById('killsChart').getContext('2d');
+                    const players = data.players.slice(0, 10);
+                    
+                    new Chart(killsCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: players.map(p => p.personaname || 'Аноним'),
+                            datasets: [{
+                                label: 'Убийства',
+                                data: players.map(p => p.kills || 0),
+                                backgroundColor: players.map(p => p.isRadiant ? 'rgba(76, 175, 80, 0.7)' : 'rgba(244, 67, 54, 0.7)'),
+                                borderColor: players.map(p => p.isRadiant ? '#4CAF50' : '#F44336'),
+                                borderWidth: 1
+                            }]
+                        },
+                        options: getChartOptions()
+                    });
+                } catch (e) {
+                    console.error('Ошибка создания графика убийств:', e);
+                }
+            } else {
+                console.warn('Нет данных для графика убийств');
+                document.getElementById('killsChart').parentElement.innerHTML = '<p>Нет данных для графика убийств</p>';
+            }
+
+            if (!data.radiant_gold_adv || data.radiant_gold_adv.length === 0) {
+    console.warn('Нет данных для графика золота');
+    const goldChartEl = document.getElementById('goldChart');
+    if (goldChartEl) goldChartEl.parentElement.innerHTML = '<p>Нет данных для графика золота</p>';
+    return;
+}
+        }
+
+        // Генерация меток времени для графиков
+        function generateTimeLabels(duration, dataPoints) {
+            const minutes = Math.floor(duration / 60);
+            const interval = Math.max(1, Math.floor(dataPoints / 10));
+            
+            return Array.from({length: Math.min(10, dataPoints)}, (_, i) => {
+                const time = Math.floor((i * interval * duration) / (dataPoints * 60));
+                return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')}`;
+            });
+        }
+
+        // Общая конфигурация для графиков
+        function getChartOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#FFFFFF'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#CCCCCC'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#CCCCCC'
+                        }
+                    }
+                }
+            };
+        }
+
+        // Вспомогательные функции
+        function formatDuration(seconds) {
+            if (!seconds) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function formatMatchDate(date) {
+            const now = new Date();
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Сегодня, ' + date.toLocaleTimeString();
+            if (diffDays === 1) return 'Вчера, ' + date.toLocaleTimeString();
+            return date.toLocaleDateString() + ', ' + date.toLocaleTimeString();
+        }
+
+        function getGameMode(modeId) {
+            const modes = {
+                1: "All Pick", 2: "Captains Mode", 3: "Random Draft",
+                4: "Single Draft", 5: "All Random", 22: "All Draft",
+                23: "Turbo", 18: "Ability Draft"
+            };
+            return modes[modeId] || `Режим ${modeId}`;
+        }
+
+        // Основная функция инициализации
+        async function init() {
+            try {
+                const data = await loadMatchData();
+                renderMatchInfo(data);
+                renderPlayers(data.players);
+                renderBuildingsStatus(data);
+                
+                // Загружаем дополнительные данные для графиков
+                try {
+                    const response = await fetch(`${API_URL}/matches/${matchId}/timings`);
+                    if (response.ok) {
+                        const timingsData = await response.json();
+                        // Объединяем данные для графиков
+                        const fullData = {...data, ...timingsData};
+                        renderCharts(fullData);
+                    } else {
+                        console.warn('Не удалось загрузить данные для графиков');
+                        renderCharts(data); // Пробуем с основными данными
+                    }
+                } catch (e) {
+                    console.error('Ошибка загрузки данных для графиков:', e);
+                    renderCharts(data); // Пробуем с основными данными
+                }
+            } catch (error) {
+                showError(`Не удалось загрузить данные матча: ${error.message}`);
+            }
+        }
+
+        // Запускаем при загрузке страницы
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
